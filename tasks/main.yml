@@ -55,6 +55,7 @@
 - name: install node-exporter
   include: install-node-exporter.yml
   when: '"node_exporter" in prometheus_components'
+  tags: node_exporter
 
 - name: install pushgateway
   include: install-pushgateway.yml
