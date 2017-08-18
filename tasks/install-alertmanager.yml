@@ -66,6 +66,7 @@
     - name: clone the alertmanager project src
       git:
         repo: "{{ prometheus_alertmanager_git_url }}"
+        version: master
         dest: "{{ prometheus_alertmanager_src_path }}"
         force: yes
 

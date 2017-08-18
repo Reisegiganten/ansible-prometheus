@@ -58,6 +58,7 @@
       git:
         repo: "{{ prometheus_git_url }}"
         dest: "{{ prometheus_src_path }}"
+        version: master
         force: yes
 
     - name: build prometheus

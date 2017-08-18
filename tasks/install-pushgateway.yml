@@ -52,6 +52,7 @@
       git:
         repo: "{{ prometheus_pushgateway_git_url }}"
         dest: "{{ prometheus_pushgateway_src_path }}"
+        version: master
         force: yes
 
     - name: build pushgateway source code

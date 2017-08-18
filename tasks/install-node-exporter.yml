@@ -61,6 +61,7 @@
       git:
         repo: "{{ prometheus_node_exporter_git_url }}"
         dest: "{{ prometheus_node_exporter_src_path }}"
+        version: master
         force: yes
 
     - name: build node_exporter source code
