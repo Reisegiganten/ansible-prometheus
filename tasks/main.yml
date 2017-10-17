@@ -61,6 +61,10 @@
   include: install-pushgateway.yml
   when: '"pushgateway" in prometheus_components'
 
+- name: install varnish exporter
+  include: install-varnish-exporter.yml
+  when: '"varnish_exporter" in prometheus_components'
+
 - name: install alertmanager
   include: install-alertmanager.yml
   when: '"alertmanager" in prometheus_components'

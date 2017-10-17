@@ -1,0 +1,108 @@
+---
+# file: tasks/install-varnish-exporter.yml
+#
+# Install Prometheus varnish-exporter.
+#
+# @see http://prometheus.io/docs/introduction/getting_started/
+#
+
+- block:
+
+    - name: set internal variables for convenience
+      set_fact:
+        prometheus_varnish_exporter_tarball_url: "https://github.com/jonnenauha/prometheus_varnish_exporter/releases/download/{{ prometheus_varnish_exporter_version }}/prometheus_varnish_exporter-{{ prometheus_varnish_exporter_version }}.linux-amd64.tar.gz"
+        prometheus_varnish_exporter_subdir: "{{ prometheus_install_path }}/prometheus_varnish_exporter-{{ prometheus_varnish_exporter_version }}.linux-amd64"
+      when: ansible_userspace_bits == "64"
+
+    - name: set internal variables for convenience
+      set_fact:
+        prometheus_varnish_exporter_tarball_url: "https://github.com/jonnenauha/prometheus_varnish_exporter/releases/download/{{ prometheus_varnish_exporter_version }}/prometheus_varnish_exporter-{{ prometheus_varnish_exporter_version }}.linux-386.tar.gz"
+        prometheus_varnish_exporter_subdir: "{{ prometheus_install_path }}/prometheus_varnish_exporter-{{ prometheus_varnish_exporter_version }}.linux-386"
+      when: ansible_userspace_bits == "32"
+
+    - name: set daemon dir
+      set_fact:
+        prometheus_varnish_exporter_daemon_dir: "{{ prometheus_varnish_exporter_subdir }}"
+
+    - name: download and untar varnish_exporter tarball
+      unarchive:
+        src: "{{ prometheus_varnish_exporter_tarball_url }}"
+        dest: "{{ prometheus_install_path }}"
+        copy: no
+
+  when: prometheus_varnish_exporter_version != "git"
+
+
+- block:
+
+    - name: set internal variables for convenience
+      set_fact:
+        prometheus_varnish_exporter_git_url: "https://github.com/jonnenauha/prometheus_varnish_exporter.git"
+        prometheus_varnish_exporter_src_path: "{{ prometheus_goroot }}/src/github.com/jonnenauha/prometheus_varnish_exporter"
+        prometheus_varnish_exporter_daemon_dir: "{{ prometheus_install_path }}"
+
+    - name: delete the varnish_exporter build directory, if necessary
+      file: path={{ prometheus_varnish_exporter_src_path }}  state=absent
+      when: prometheus_rebuild
+
+    - name: mkdir for varnish_exporter source code
+      file: path={{ prometheus_varnish_exporter_src_path }}  state=directory
+
+    - name: clone the varnish_exporter project src
+      git:
+        repo: "{{ prometheus_varnish_exporter_git_url }}"
+        dest: "{{ prometheus_varnish_exporter_src_path }}"
+        version: master
+        force: yes
+
+    - name: build varnish_exporter source code
+      command: make
+      args:
+        chdir: "{{ prometheus_varnish_exporter_src_path }}"
+        creates: varnish_exporter
+      environment:
+        GO15VENDOREXPERIMENT: 1
+        GOROOT: "{{ prometheus_goroot }}"
+        GOPATH: "{{ prometheus_gopath }}"
+        PATH: "{{ ansible_env.PATH }}:{{ prometheus_goroot }}/bin:{{ prometheus_gopath }}/bin"
+
+    - name: copy the built varnish_exporter to the install path
+      command: "cp {{ prometheus_varnish_exporter_src_path }}/prometheus_varnish_exporter {{ prometheus_install_path }}"
+      args:
+        creates: "{{ prometheus_install_path }}/varnish_exporter"
+
+  when: prometheus_varnish_exporter_version == "git"
+
+
+
+- name: set permissions, owner and group
+  file: path={{ prometheus_varnish_exporter_daemon_dir }}/prometheus_varnish_exporter owner={{ prometheus_user }} group={{ prometheus_group }} mode="go-w"
+
+- name: mkdir for data
+  file:
+    path: "{{ prometheus_db_path }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: "u=rwx,g=rx,o="
+
+- name: set varnish_exporter variables
+  copy: src="../files/etc-default-varnish_exporter"  dest=/etc/default/varnish_exporter
+
+- name: copy INIT script to server
+  template: src="../templates/varnish_exporter.sysvinit.{{ ansible_os_family|lower }}.sh.j2"  dest="/etc/init.d/varnish_exporter"  mode="a+x"
+  when: not prometheus_node_exporter_use_systemd|bool
+
+- name: copy systemd config to server
+  template: src="../templates/varnish_exporter.service.j2"  dest="/etc/systemd/system/varnish_exporter.service"
+  when: prometheus_node_exporter_use_systemd
+
+- name: Ensure prometheus users is in varnish group
+  user:
+    name: prometheus
+    groups: varnish
+    append: yes
+
+
+- name: set INIT status and start
+  service: name=varnish_exporter enabled=yes state=started
