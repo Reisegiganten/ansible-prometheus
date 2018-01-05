@@ -109,7 +109,7 @@
   when: not prometheus_node_exporter_use_systemd|bool
 
 - name: copy systemd config to server
-  template: src="../templates/node_exporter.service.j2"  dest="/lib/systemd/system/node_exporter.service"
+  template: src="../templates/node_exporter.service.j2"  dest="/etc/systemd/system/node_exporter.service"
   register: prometheus_node_exporter_service_file
   when: prometheus_node_exporter_use_systemd|bool
 
