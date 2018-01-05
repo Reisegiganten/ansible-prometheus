@@ -19,3 +19,6 @@ ExecStart={{ prometheus_pushgateway_daemon_dir }}/pushgateway  {{ prometheus_pus
 {% else %}
 ExecStart={{ prometheus_pushgateway_daemon_dir }}/pushgateway
 {% endif %}
+
+[Install]
+WantedBy=multi-user.target

@@ -20,3 +20,7 @@ ExecStart={{ prometheus_varnish_exporter_daemon_dir }}/prometheus_varnish_export
 {% else %}
 ExecStart={{ prometheus_varnish_exporter_daemon_dir }}/prometheus_varnish_exporter
 {% endif %}
+
+[Install]
+WantedBy=multi-user.target
+
