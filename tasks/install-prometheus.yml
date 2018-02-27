@@ -38,6 +38,7 @@
         src: "{{ prometheus_tarball_url }}"
         dest: "{{ prometheus_install_path }}"
         copy: no
+        creates: "{{prometheus_install_path}}/prometheus-{{prometheus_version}}.linux-{{ (ansible_userspace_bits == '32') | ternary('386', 'amd64') }}"
 
   when: prometheus_version != "git"
 
