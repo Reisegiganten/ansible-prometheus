@@ -15,7 +15,7 @@ prometheus_group:  prometheus
 
 prometheus_version:                   1.5.0
 prometheus_node_exporter_version:     0.13.0
-prometheus_varnish_exporter_version:  1.3.3
+prometheus_varnish_exporter_version:  1.4
 prometheus_alertmanager_version:      0.5.1
 prometheus_pushgateway_version:       0.3.1
 
@@ -31,6 +31,8 @@ prometheus_db_path:              /var/lib/prometheus
 prometheus_log_path:             /var/log/prometheus
 prometheus_pid_path:             /var/run/prometheus
 prometheus_alertmanager_db_path: /var/lib/alertmanager
+prometheus_components:
+  - node_exporter
 
 
 prometheus_download_path: /tmp

@@ -95,6 +95,7 @@
 
 - name: copy systemd config to server
   template: src="../templates/varnish_exporter.service.j2"  dest="/etc/systemd/system/varnish_exporter.service"
+  notify: restart varnish_exporter
   when: prometheus_node_exporter_use_systemd
 
 - name: Ensure varnish group exists
