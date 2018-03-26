@@ -39,6 +39,6 @@
   service: name=alertmanager state=stopped
   when: prometheus_use_service|bool
 
-- name: restart varnish_exporter 
+- name: restart varnish_exporter
   systemd: name=varnish_exporter state=restarted daemon_reload=yes
   when: prometheus_use_service|bool
